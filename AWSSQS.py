@@ -12,10 +12,16 @@ from transformers import AutoProcessor,CLIPProcessor, CLIPModel, CLIPTokenizer
 
 load_dotenv()
 
-profile = os.getenv('AWS_PROFILE')
+# profile = os.getenv('AWS_PROFILE')
 region = os.getenv('AWS_REGION')
+os.environ.pop('AWS_PROFILE', None)
+access_key = os.getenv('AWS_ACCESS_KEY')
+secret_key = os.getenv('AWS_SECRET_KEY')
 # AWS設定
-session = boto3.Session(profile_name=profile,region_name=region)
+session = boto3.Session(
+    aws_access_key_id=access_key,
+    aws_secret_access_key=secret_key,
+    region_name=region)
 
 #sqs = boto3.client('sqs')
 sqs = session.client('sqs')
