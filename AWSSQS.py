@@ -1,3 +1,4 @@
+from dotenv import load_dotenv
 import torch
 import boto3
 import json
@@ -8,14 +9,19 @@ from PIL import Image
 from pymongo import MongoClient
 from transformers import AutoProcessor,CLIPProcessor, CLIPModel, CLIPTokenizer
 
+
+load_dotenv()
+
+profile = os.getenv('AWS_PROFILE')
+region = os.getenv('AWS_REGION')
 # AWS設定
-session = boto3.Session(profile_name='myregion',region_name='ap-northeast-1')
+session = boto3.Session(profile_name=profile,region_name=region)
 
 #sqs = boto3.client('sqs')
 sqs = session.client('sqs')
 s3_client = session.client('s3')
-queue_url = '<sqs_url>'
-
+SQS_URL = os.getenv('SQS_URL')
+queue_url = SQS_URL
 
 def get_model_info(model_ID, device):
 	model = CLIPModel.from_pretrained(model_ID).to(device)
@@ -36,7 +42,7 @@ def get_single_image_embedding(my_image):
     # convert the embeddings to numpy array
     return embedding.cpu().detach().numpy()
 
-driver_URL = '<mongodb_url>'
+driver_URL = os.getenv('MONGODB_URL')
 vector_database_field_name= 'embed'
 def process_message(message):
     body = json.loads(message['Body'])
@@ -46,6 +52,7 @@ def process_message(message):
     
     bucket = s3['bucket']['name']
     key = s3['object']['key']
+    print("uploaded file:" + key)
     
     file_content = io.BytesIO()
     # key is filename (id.jpg)
